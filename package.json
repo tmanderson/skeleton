@@ -1,0 +1,24 @@
+{
+  "name": "skeleton",
+  "version": "0.1.0",
+  "description": "Simple project scaffolding",
+  "main": "src/main.js",
+  "bin": {
+    "skeleton": "./bin/skeleton"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "scaffolding",
+    "skeleton",
+    "creation",
+    "fs"
+  ],
+  "author": "Mitch Anderson",
+  "license": "ISC",
+  "dependencies": {
+    "lodash": "^3.10.1",
+    "request": "^2.64.0"
+  }
+}
