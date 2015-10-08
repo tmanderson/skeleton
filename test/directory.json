@@ -1,14 +1,13 @@
 {
   ".": {
     "bower.json": "https://gist.githubusercontent.com/tmanderson/e700a96385090a4d532d/raw/34e36c2b4c4d9ba022b3079b17396cbd2d40335b/bower.json",
-    "package.json": "https://gist.githubusercontent.com/tmanderson/e700a96385090a4d532d/raw/34e36c2b4c4d9ba022b3079b17396cbd2d40335b/package.json",
     "Gruntfile.js": "https://gist.githubusercontent.com/tmanderson/e700a96385090a4d532d/raw/34e36c2b4c4d9ba022b3079b17396cbd2d40335b/Gruntfile.js"
   },
   "client": {
     ".": {
       "index.html": "https://gist.githubusercontent.com/tmanderson/e700a96385090a4d532d/raw/34e36c2b4c4d9ba022b3079b17396cbd2d40335b/index.html"
     },
-    
+
     "assets": {
       "images": [
         "main.ico"

@@ -2,9 +2,13 @@
 
 var _ = require('lodash');
 
+function spaces(maxWidth) {
+  return _.map(_.range(maxWidth), _.constant(' '));
+}
+
 function parseFlaggedArgs(rawArgs, opts) {
   var args = {};
-
+  
   _.each(
     rawArgs.join(' ').split(/\s-{1,2}(?=\w)/),
     function(value) {
@@ -38,7 +42,7 @@ function parseFlaggedArgs(rawArgs, opts) {
   }));
 }
 
-function parseAnonymousArgs(rawArgs, opts) {
+function parseCommands(rawArgs, opts) {
   var args = {};
   var flagRE = /\s(?=-)/;
   
@@ -58,10 +62,63 @@ function parseAnonymousArgs(rawArgs, opts) {
 }
 
 function parseArgs(argv, opts) {
-  return _.merge(
-    parseAnonymousArgs(argv.slice(2), opts.args),
-    parseFlaggedArgs(argv.slice(2), opts.flags)
+  var cmds;
+
+  // help
+  if(argv.indexOf('-h') > -1 || argv.indexOf('--help') > -1) {
+    process.stdout.write('\x1B[1;33mUsage:\x1B[0m\n\n  \x1B[34mskeleton\x1B[0m <command>');
+    process.stdout.write('\n\n');
+
+    console.log('\x1B[1;33mCommands:\x1B[0m\n');
+    _.forIn(opts.commands, function(v, k) {
+      console.log('  \x1B[34m%s\x1B[0m%s',
+        v.name || k,
+        ' <' + _.keys(v.args).join('>, ') + '>'
+      );
+    });
+    
+    console.log('\n\x1B[1;33mOptions:\x1B[0m\n');
+
+    _.forIn(opts.flags, function(v, k) {
+      cmds = _.map(v.alias, function(v) {
+        if(v.length === 1) return '-' + v;
+        return '--' + v;
+      }).join(', ');
+
+      cmds += spaces(18).slice(cmds.length).join('') + '<' + v.type.name + '>';
+
+      console.log('  %s%s%s',
+        cmds,
+        spaces(30).slice(cmds.length).join(''),
+        (v.description || '')
+      );
+    });
+
+    process.exit(0);
+  }
+
+  var commands = {};
+  var args, command, cconfig;
+
+  _.each(
+    _.map(argv.slice(2).join(' ').split(';'), _.trim),
+    function(value) {
+      args = value.split(' ');
+      command = args.shift();
+      cconfig = opts.commands[command];
+      
+      commands[command] = _.merge(
+        parseFlaggedArgs(args, _.extend(opts.flags, cconfig.flags || {})),
+        {
+          args: _.mapValues(cconfig.args, function(arg, i) {
+            return args[i];
+          })
+        }
+      );
+    }
   );
+
+  return commands;
 }
 
 module.exports = parseArgs;
