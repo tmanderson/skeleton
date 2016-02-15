@@ -18,7 +18,10 @@
   "author": "Mitch Anderson",
   "license": "ISC",
   "dependencies": {
+    "bower": "^1.5.3",
     "lodash": "^3.10.1",
+    "npm": "^3.3.5",
+    "q": "^1.4.1",
     "request": "^2.64.0"
   }
 }
