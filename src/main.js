@@ -53,6 +53,5 @@ global.args = require('./args')(process.argv, {
   }
 });
 
-
 require('./dir');
 require('./deps');

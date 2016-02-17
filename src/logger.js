@@ -22,10 +22,12 @@ _.extend(module.exports, {
   },
 
   success: function(label) {
+    if(args.silent) return;
     console.log.apply(console, [green(label)].concat(_.toArray(arguments).slice(1)));
   },
 
   error: function(label) {
+    if(args.silent) return;
     console.log.apply(console, [red(label)].concat(_.toArray(arguments).slice(1)));
   }
 });

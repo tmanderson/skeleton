@@ -1,13 +1,31 @@
 'use strict';
 
 var _ = require('lodash');
+
+_.mixin({
+  typeof: function(val) {
+    if(_.isArray(val)) return 'array';
+    if(_.isNumber(val)) return 'number';
+    if(_.isString(val)) return 'string';
+    if(_.isObject(val)) return 'object';
+    return null;
+  }
+});
+
 var fs = require('fs');
 var path = require('path');
 var logger = require('./logger');
 var request = require('request');
+var parser = require('./parsers');
 
-var schema = JSON.parse(fs.readFileSync(args.fs[0]));
+var schema;
 var basePath = process.cwd();
+
+try {
+  schema = JSON.parse(fs.readFileSync(args.fs[0]))
+} catch(e) {
+  schema = parser.toJSONSchema(fs.readFileSync(args.fs[0]).toString());
+}
 
 function writeFileSync(path, contents) {
   logger.success('[Create]', path);
@@ -17,19 +35,20 @@ function writeFileSync(path, contents) {
 
 function createFile(filePath, name, val) {
   var fullPath;
+
   if(!(_.isString(filePath) && _.isString(name))) return;
 
-  fullPath = path.join(filePath, name);
-
-  if(/^(http|www\.)/.test(val)) {
-    request.get(val, function(err, res, body) {
+  if(/^(http|www\.)/.test(name)) {
+    fullPath = path.join(filePath, name.split('/').pop());
+    request.get(name, function(err, res, body) {
       if(!err) {
         writeFileSync(fullPath, body);
       }
     });
   }
   else {
-    writeFileSync(fullPath, val);
+    // console.log(filePath, name, val);
+    writeFileSync(path.join(filePath, name), val || '');
   }
 }
 
@@ -53,31 +72,29 @@ function recursiveDelete(base) {
 }
 
 function createDirectory(filePath, name) {
+  if(fs.existsSync(path.join(filePath, name))) return;
   logger.success('[Create]', path.join(filePath, name));
   if(args.nowrite) return;
   fs.mkdirSync(path.join(filePath, name));
 }
 
 function parseDirectorySchema(schema, dir) {
+  console.log(schema, dir);
   _.forIn(schema, function(val, name) {
-    if(name !== '.' && (_.isObject(val) || _.isArray(val))) {
-      createDirectory(dir, name);
+    switch(_.typeof(val)) {
+      case 'string':
+        if(name === '.') return parseDirectorySchema(val, dir);
 
-      if(_.isArray(val)) {
-        _.each(val, _.partialRight(_.partial(createFile, path.join(dir, name))));
-      }
-      else {
-        parseDirectorySchema(val, path.join(dir, name));
-      }
-    }
-    else if(name === '.') {
-      _.each(val, function(val, name) {
-        if(!_.isString(name)) return createFile(dir, val, '');
         createFile(dir, name, val);
-      });
-    }
-    else {
-      createFile(dir, name, val);
+      break;
+      case 'object':
+        if(name !== '.') createDirectory(dir, name);
+        parseDirectorySchema(val, path.join(dir, name));
+      break;
+      case 'array' :
+        createDirectory(dir, name);
+        _.each(_.filter(val), _.partialRight(_.ary(_.partial(createFile, path.join(dir, name)), 1)));
+      break;
     }
   });
 }

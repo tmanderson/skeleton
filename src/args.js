@@ -1,6 +1,7 @@
 'use strict';
 
 var _ = require('lodash');
+var anonArgRE = /(?:^|\s|"|')([\.a-zA-Z0-9]+)(?:$)?/g;
 
 function parseFlaggedArgs(rawArgs, opts) {
   var args = {};
@@ -39,14 +40,10 @@ function parseFlaggedArgs(rawArgs, opts) {
 }
 
 function parseAnonymousArgs(rawArgs, opts) {
+  var argMatch;
   var args = {};
-  var flagRE = /\s(?=-)/;
-  
-  _.each(
-    _.filter(rawArgs.join(' ').split(flagRE), function(v) {
-      return !(v.charAt(0) === '-');
-    }),
-    function(value, i) {
+
+  _.each(rawArgs.join(' ').match(anonArgRE), function(value, i) {
       var vals = _.trim(value).split(' ');
       var name = _.keys(opts)[i];
       var config = opts[name];
